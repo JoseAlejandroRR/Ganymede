@@ -150,8 +150,8 @@ app.post('/api/product/search', middlewares.Authentication, middlewares.ValidURL
       }
     }
 
-    loger.info('SEND_SEARCH_JOB', SERVICE_EXTERNAL_HOST, bodyData)
-    
+    logger.info('SEND_SEARCH_JOB', SERVICE_EXTERNAL_HOST, bodyData)
+
     await axios.post(SERVICE_EXTERNAL_HOST, bodyData, axiosConfig)
       .then(async (response) => {
 
@@ -255,6 +255,6 @@ app.get('/api/product/category/:category_id', (req, res) => {
 
 mongoose.connect(connectionString, { useNewUrlParser: true }, function (err) {
   app.listen(app.get('port'), () => {
-    console.log('Express corriendo en http://localhost:3000')
+    console.log('Express corriendo en http://localhost:' + PORT)
   })
 })
