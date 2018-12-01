@@ -1,5 +1,5 @@
 //imports
-import "@babel/polyfill";
+import "@babel/polyfill"
 import express from 'express'
 import bodyParser from 'body-parser'
 import mongoose, { model } from 'mongoose'
@@ -150,14 +150,19 @@ app.post('/api/product/search', middlewares.Authentication, middlewares.ValidURL
       }
     }
 
+    loger.info('SEND_SEARCH_JOB', SERVICE_EXTERNAL_HOST, bodyData)
+    
     await axios.post(SERVICE_EXTERNAL_HOST, bodyData, axiosConfig)
       .then(async (response) => {
+
         if (response.data.success == true) {
           searchObj.status = 'processing'
           searchObj.save()
           logger.info('SEARCH_IN_PROCESS', searchObj)
         }
+
         res.send(searchObj)
+
       }).catch((err) => {
         logger.error('ERROR calling SERVICE_EXTERNAL for:', err.response.data, err.code, err.syscall, err.adresss + ':' + err.port)
         console.log('ERROR calling SERVICE_EXTERNAL for: ' + err.response)

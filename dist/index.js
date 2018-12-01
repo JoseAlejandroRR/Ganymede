@@ -174,7 +174,8 @@ app.post('/api/product/search', _Middlewares.default.Authentication, _Middleware
                   'Content-Type': 'application/json'
                 }
               };
-              _context2.next = 7;
+              loger.info('SEND_SEARCH_JOB', SERVICE_EXTERNAL_HOST, bodyData);
+              _context2.next = 8;
               return _axios.default.post(SERVICE_EXTERNAL_HOST, bodyData, axiosConfig).then(
               /*#__PURE__*/
               function () {
@@ -214,7 +215,7 @@ app.post('/api/product/search', _Middlewares.default.Authentication, _Middleware
                 return null;
               });
 
-            case 7:
+            case 8:
             case "end":
               return _context2.stop();
           }

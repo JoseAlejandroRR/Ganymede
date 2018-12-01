@@ -11,6 +11,9 @@ var searchSchema = {
   'request': {},
   'products_data': [],
   'status': String,
-  'created_at': { type: Date, default: Date.now }
+  'created_at': {
+    type: Date,
+    default: Date.now
+  }
 };
 module.exports = _mongoose.default.model('searchs', searchSchema);
