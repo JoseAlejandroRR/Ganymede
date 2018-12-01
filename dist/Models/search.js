@@ -1,14 +1,16 @@
 "use strict";
 
-var mongoose = require("mongoose"); // create instance of Schema
+var _mongoose = _interopRequireDefault(require("mongoose"));
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var mongoSchema = mongoose.Schema; // create schema
+// create instance of Schema
+var mongoSchema = _mongoose.default.Schema; // create schema
 
 var searchSchema = {
-  "request": {},
-  "products_data": [],
-  "status": String
-}; // create model if not exists.
+  'request': {},
+  'products_data': [],
+  'status': String // create model if not exists.
 
-module.exports = mongoose.model('searchs', searchSchema);
+};
+module.exports = _mongoose.default.model('searchs', searchSchema);

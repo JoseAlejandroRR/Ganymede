@@ -1,18 +1,24 @@
 "use strict";
 
-var _express = require("express");
+var _express = _interopRequireDefault(require("express"));
 
-var _bodyParser = require("body-parser");
+var _bodyParser = _interopRequireDefault(require("body-parser"));
 
-var _mongoose = require("mongoose");
+var _mongoose = _interopRequireWildcard(require("mongoose"));
 
-var _axios = require("axios");
+var _axios = _interopRequireDefault(require("axios"));
 
-var _jwtSimple = require("jwt-simple");
+var _jwtSimple = _interopRequireDefault(require("jwt-simple"));
 
-var _moment = require("moment");
+var _moment = _interopRequireDefault(require("moment"));
 
 var _log4js = _interopRequireDefault(require("log4js"));
+
+var _Middlewares = _interopRequireDefault(require("./Middlewares"));
+
+var _search = _interopRequireDefault(require("./Models/search"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -20,13 +26,6 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-/*const express = require('express');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const axios = require('axios');
-const jwt = require('jwt-simple');
-const moment = require('moment');
-const log4js = require('log4js');*/
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 } // vars
@@ -39,13 +38,12 @@ var ACCESS_PASSWORD = process.env.ACCESS_PASSWORD;
 var HOST = process.env.HOST;
 var PORT = process.env.PORT;
 var ENDPOINT_SERVICE = HOST + ':' + PORT;
-var SERVICE_EXTERNAL_HOST = process.env.SERVICE_EXTERNAL_HOST; // logic
+var SERVICE_EXTERNAL_HOST = process.env.SERVICE_EXTERNAL_HOST;
+var PER_PAGE = parseInt(process.env.PER_PAGE); // logic
 
-var middlewares = require('./Middlewares');
-
-var modelSearch = require('./Models/search'); // settings
-
-
+//const middlewares = require('./Middlewares')
+//const modelSearch = require('./Models/search')
+// settings
 _log4js.default.configure({
   appenders: {
     express: {
@@ -63,12 +61,12 @@ _log4js.default.configure({
 
 var logger = _log4js.default.getLogger('express');
 
-var app = (0, _express.express)();
-app.use(_bodyParser.bodyParser.json({
+var app = (0, _express.default)();
+app.use(_bodyParser.default.json({
   limit: '20mb',
   extended: true
 }));
-app.use(_bodyParser.bodyParser.urlencoded({
+app.use(_bodyParser.default.urlencoded({
   limit: '20mb',
   extended: true
 }));
@@ -101,11 +99,11 @@ app.post('/api/auth', function (req, res) {
   }
 
   var accessToken = {
-    iat: (0, _moment.moment)().unix(),
-    exp: (0, _moment.moment)().add(60, "minutes").unix()
+    iat: (0, _moment.default)().unix(),
+    exp: (0, _moment.default)().add(60, 'minutes').unix()
   };
 
-  var token = _jwtSimple.jwt.encode(accessToken, PRIVATE_KEY);
+  var token = _jwtSimple.default.encode(accessToken, PRIVATE_KEY);
 
   logger.info('ACCESS_TOKEN_CREATED', req.body);
   res.send({
@@ -113,26 +111,43 @@ app.post('/api/auth', function (req, res) {
   });
 }); //route for request new search
 
-app.get('/api/product/search-orders', middlewares.Authentication, function (req, res) {
+app.get('/api/product/search-orders', _Middlewares.default.Authentication, function (req, res) {
   var results = {};
-  modelSearch.find({}, function (err, data) {
-    if (err) {
-      response = {
-        "error": true,
-        "message": "Error fetching data by: " + err
-      };
-      logger.debug('ACCESS_TOKEN_CREATED', response.message);
-    } else {
-      response = data;
-    }
+  var response = null;
+  var page = !isNaN(req.query.page) ? parseInt(req.query.page) : 0;
 
-    res.json(response);
+  _search.default.find({}).limit(PER_PAGE).skip(PER_PAGE * page).exec(function (err, data) {
+    _search.default.countDocuments().exec(function (error, count) {
+      if (err) {
+        response = {
+          'error': true,
+          'message': 'Error fetching data by: ' + err
+        };
+        logger.error('QUERY_DOCUMENTS_ERROR', err);
+      } else if (error) {
+        response = {
+          'error': true,
+          'message': 'Error count document by: ' + error
+        };
+        logger.error('COUNT_DOCUMENTS_ERROR', error);
+      } else {
+        response = {
+          page: page,
+          pagesTotal: Math.ceil(count / PER_PAGE),
+          resultsTotal: count,
+          results: data
+        };
+        logger.info('QUERY_DOCUMENTS_EXCECUTE', response);
+      }
+
+      res.json(response);
+    });
   });
 }); // route for get all documents
 
-app.post('/api/product/search', middlewares.Authentication, middlewares.ValidURL, function (req, res) {
+app.post('/api/product/search', _Middlewares.default.Authentication, _Middlewares.default.ValidURL, function (req, res) {
   var requestBody = req.body;
-  var searchObj = new modelSearch();
+  var searchObj = new _search.default();
   searchObj.request = requestBody;
   searchObj.status = 'received';
   searchObj.products_data = [];
@@ -153,11 +168,11 @@ app.post('/api/product/search', middlewares.Authentication, middlewares.ValidURL
               console.log(requestBody);
               axiosConfig = {
                 headers: {
-                  "Content-Type": "application/json"
+                  'Content-Type': 'application/json'
                 }
               };
               _context2.next = 7;
-              return _axios.axios.post(SERVICE_EXTERNAL_HOST, bodyData, axiosConfig).then(
+              return _axios.default.post(SERVICE_EXTERNAL_HOST, bodyData, axiosConfig).then(
               /*#__PURE__*/
               function () {
                 var _ref2 = _asyncToGenerator(
@@ -213,13 +228,14 @@ app.post('/api/product/search', middlewares.Authentication, middlewares.ValidURL
   });
 }); // route for get a document data
 
-app.get('/api/product/search-order/:id', middlewares.Authentication, function (req, res) {
+app.get('/api/product/search-order/:id', _Middlewares.default.Authentication, function (req, res) {
   var results = {};
-  modelSearch.findById(req.params.id, function (err, data) {
+
+  _search.default.findById(req.params.id, function (err, data) {
     if (err) {
       response = {
-        "error": true,
-        "message": "Error fetching data by: " + err
+        'error': true,
+        'message': 'Error fetching data by: ' + err
       };
       logger.debug('Error fetching data by:', response.message);
     } else {
@@ -230,7 +246,7 @@ app.get('/api/product/search-order/:id', middlewares.Authentication, function (r
   });
 }); // route for update a document
 
-app.put('/api/product/search-order/:id', middlewares.Authentication,
+app.put('/api/product/search-order/:id', _Middlewares.default.Authentication,
 /*#__PURE__*/
 function () {
   var _ref3 = _asyncToGenerator(
@@ -242,7 +258,8 @@ function () {
         switch (_context6.prev = _context6.next) {
           case 0:
             requestBody = req.body;
-            modelSearch.findById(req.params.id,
+
+            _search.default.findById(req.params.id,
             /*#__PURE__*/
             function () {
               var _ref4 = _asyncToGenerator(
@@ -254,8 +271,8 @@ function () {
                       case 0:
                         if (err) {
                           response = {
-                            "error": true,
-                            "message": "Error fetching data"
+                            'error': true,
+                            'message': 'Error fetching data'
                           };
                           logger.debug('Error fetching data by:', response.message);
                         } else {
@@ -275,21 +292,20 @@ function () {
                                       if (err) {
                                         logger.error('ERROR_SEARCH_UPDATE', obj, requestBody, err);
                                         response = {
-                                          "error": err
+                                          'error': err
                                         };
                                       } else {
                                         logger.info('SEARCH_OBJECT_UPDATED', obj, requestBody);
                                         response = {
-                                          "success": true
+                                          'success': true
                                         };
-                                        console.log(response);
                                         axiosConfig = {
                                           headers: {
-                                            "Content-Type": "application/json"
+                                            'Content-Type': 'application/json'
                                           }
                                         };
 
-                                        _axios.axios.post(obj.request.callbackUrl, {
+                                        _axios.default.post(obj.request.callbackUrl, {
                                           url: ENDPOINT_SERVICE + '/api/product/search-order/' + obj._id
                                         }, axiosConfig).then(
                                         /*#__PURE__*/
@@ -365,7 +381,8 @@ function () {
 
 app.get('/api/product/category/:category_id', function (req, res) {
   var results = {};
-  modelSearch.find({
+
+  _search.default.find({
     products_data: {
       $elemMatch: {
         category: req.params.category_id
@@ -374,8 +391,8 @@ app.get('/api/product/category/:category_id', function (req, res) {
   }, function (err, data) {
     if (err) {
       response = {
-        "error": true,
-        "message": "Error fetching data by: " + err
+        'error': true,
+        'message': 'Error fetching data by: ' + err
       };
       logger.error('ERROR_SEARCH_UPDATE', response.message);
     } else {
@@ -386,7 +403,7 @@ app.get('/api/product/category/:category_id', function (req, res) {
   });
 }); // connection with mongo database server
 
-_mongoose.mongoose.connect(connectionString, {
+_mongoose.default.connect(connectionString, {
   useNewUrlParser: true
 }, function (err) {
   app.listen(app.get('port'), function () {

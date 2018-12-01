@@ -1,27 +1,30 @@
 "use strict";
 
-var jwt = require('jwt-simple');
+var _jwtSimple = _interopRequireDefault(require("jwt-simple"));
 
-var moment = require('moment');
+var _moment = _interopRequireDefault(require("moment"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (req, res, next) {
   if (!req.headers.authorization) {
     return res.status(403).send({
-      message: "ACCESS_TOKEN_MISSING"
+      message: 'ACCESS_TOKEN_MISSING'
     });
   }
 
   try {
-    var token = req.headers.authorization.split(" ")[1];
-    var accessToken = jwt.decode(token, req.PRIVATE_KEY, true);
+    var token = req.headers.authorization.split(' ')[1];
 
-    if (accessToken.exp <= moment().unix()) {
+    var accessToken = _jwtSimple.default.decode(token, req.PRIVATE_KEY, true);
+
+    if (accessToken.exp <= (0, _moment.default)().unix()) {
       return res.status(401).send({
-        message: "ACCESS_TOKEN_EXPIRED"
+        message: 'ACCESS_TOKEN_EXPIRED'
       });
     }
   } catch (err) {
-    console.log("ACCESS ERROR: " + err);
+    console.log('ACCESS ERROR: ' + err);
     return res.status(500).send({
       message: 'ACCESS_TOKEN_INVALID'
     });
