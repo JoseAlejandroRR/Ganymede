@@ -12,6 +12,7 @@
   "author": "JoseAlejandror28@gmail.com",
   "license": "ISC",
   "dependencies": {
+    "@babel/polyfill": "^7.0.0",
     "axios": "^0.18.0",
     "dotenv": "^6.1.0",
     "express": "^4.16.4",
