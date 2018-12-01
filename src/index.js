@@ -1,5 +1,5 @@
 //imports
-
+import "@babel/polyfill";
 import express from 'express'
 import bodyParser from 'body-parser'
 import mongoose, { model } from 'mongoose'
@@ -136,6 +136,7 @@ app.post('/api/product/search', middlewares.Authentication, middlewares.ValidURL
   searchObj.request = requestBody
   searchObj.status = 'received'
   searchObj.products_data = []
+  searchObj.created_at = new Date()
 
   searchObj.save().then(async (searchObj) => {
     logger.info('SEARCH_CREATED', searchObj)
@@ -158,7 +159,7 @@ app.post('/api/product/search', middlewares.Authentication, middlewares.ValidURL
         }
         res.send(searchObj)
       }).catch((err) => {
-        logger.error('ERROR calling SERVICE_EXTERNAL for:', err.code, err.syscall, err.adresss + ':' + err.port)
+        logger.error('ERROR calling SERVICE_EXTERNAL for:', err.response.data, err.code, err.syscall, err.adresss + ':' + err.port)
         console.log('ERROR calling SERVICE_EXTERNAL for: ' + err.response)
         res.send({ error: true, message: `EXTERNAL_SERVER_${err.syscall.toUpperCase()}` })
         return null
@@ -174,7 +175,8 @@ app.post('/api/product/search', middlewares.Authentication, middlewares.ValidURL
 // route for get a document data
 
 app.get('/api/product/search-order/:id', middlewares.Authentication, (req, res) => {
-  var results = {}
+  let response = null
+
   modelSearch.findById(req.params.id, function (err, data) {
     if (err) {
       response = { 'error': true, 'message': 'Error fetching data by: ' + err }
@@ -190,7 +192,9 @@ app.get('/api/product/search-order/:id', middlewares.Authentication, (req, res) 
 // route for update a document
 
 app.put('/api/product/search-order/:id', middlewares.Authentication, async function (req, res) {
-  var requestBody = req.body
+  const requestBody = req.body
+  let response = null
+
   modelSearch.findById(req.params.id, async function (err, obj) {
     if (err) {
       response = { 'error': true, 'message': 'Error fetching data' }
@@ -204,7 +208,7 @@ app.put('/api/product/search-order/:id', middlewares.Authentication, async funct
           response = { 'error': err }
         } else {
           logger.info('SEARCH_OBJECT_UPDATED', obj, requestBody)
-          response = { 'success': true }
+          response = obj
           const axiosConfig = {
             headers: {
               'Content-Type': 'application/json',
@@ -219,7 +223,7 @@ app.put('/api/product/search-order/:id', middlewares.Authentication, async funct
               console.log('ERROR calling SERVICE_EXTERNAL for: ' + err)
             })
         }
-        res.send(obj)
+        res.json(response)
       })
     }
   })
@@ -229,7 +233,7 @@ app.put('/api/product/search-order/:id', middlewares.Authentication, async funct
 // route for get documents with a category specific
 
 app.get('/api/product/category/:category_id', (req, res) => {
-  var results = {}
+  let response = null
   modelSearch.find({ products_data: { $elemMatch: { category: req.params.category_id } } }, function (err, data) {
     if (err) {
       response = { 'error': true, 'message': 'Error fetching data by: ' + err }

@@ -1,5 +1,7 @@
 "use strict";
 
+require("@babel/polyfill");
+
 var _express = _interopRequireDefault(require("express"));
 
 var _bodyParser = _interopRequireDefault(require("body-parser"));
@@ -151,6 +153,7 @@ app.post('/api/product/search', _Middlewares.default.Authentication, _Middleware
   searchObj.request = requestBody;
   searchObj.status = 'received';
   searchObj.products_data = [];
+  searchObj.created_at = new Date();
   searchObj.save().then(
   /*#__PURE__*/
   function () {
@@ -202,7 +205,7 @@ app.post('/api/product/search', _Middlewares.default.Authentication, _Middleware
                   return _ref2.apply(this, arguments);
                 };
               }()).catch(function (err) {
-                logger.error('ERROR calling SERVICE_EXTERNAL for:', err.code, err.syscall, err.adresss + ':' + err.port);
+                logger.error('ERROR calling SERVICE_EXTERNAL for:', err.response.data, err.code, err.syscall, err.adresss + ':' + err.port);
                 console.log('ERROR calling SERVICE_EXTERNAL for: ' + err.response);
                 res.send({
                   error: true,
@@ -229,7 +232,7 @@ app.post('/api/product/search', _Middlewares.default.Authentication, _Middleware
 }); // route for get a document data
 
 app.get('/api/product/search-order/:id', _Middlewares.default.Authentication, function (req, res) {
-  var results = {};
+  var response = null;
 
   _search.default.findById(req.params.id, function (err, data) {
     if (err) {
@@ -252,12 +255,13 @@ function () {
   var _ref3 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee6(req, res) {
-    var requestBody;
+    var requestBody, response;
     return regeneratorRuntime.wrap(function _callee6$(_context6) {
       while (1) {
         switch (_context6.prev = _context6.next) {
           case 0:
             requestBody = req.body;
+            response = null;
 
             _search.default.findById(req.params.id,
             /*#__PURE__*/
@@ -296,9 +300,7 @@ function () {
                                         };
                                       } else {
                                         logger.info('SEARCH_OBJECT_UPDATED', obj, requestBody);
-                                        response = {
-                                          'success': true
-                                        };
+                                        response = obj;
                                         axiosConfig = {
                                           headers: {
                                             'Content-Type': 'application/json'
@@ -337,7 +339,7 @@ function () {
                                         });
                                       }
 
-                                      res.send(obj);
+                                      res.json(response);
 
                                     case 2:
                                     case "end":
@@ -366,7 +368,7 @@ function () {
               };
             }());
 
-          case 2:
+          case 3:
           case "end":
             return _context6.stop();
         }
@@ -380,7 +382,7 @@ function () {
 }()); // route for get documents with a category specific
 
 app.get('/api/product/category/:category_id', function (req, res) {
-  var results = {};
+  var response = null;
 
   _search.default.find({
     products_data: {
