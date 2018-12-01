@@ -174,7 +174,7 @@ app.post('/api/product/search', _Middlewares.default.Authentication, _Middleware
                   'Content-Type': 'application/json'
                 }
               };
-              loger.info('SEND_SEARCH_JOB', SERVICE_EXTERNAL_HOST, bodyData);
+              logger.info('SEND_SEARCH_JOB', SERVICE_EXTERNAL_HOST, bodyData);
               _context2.next = 8;
               return _axios.default.post(SERVICE_EXTERNAL_HOST, bodyData, axiosConfig).then(
               /*#__PURE__*/
@@ -410,6 +410,6 @@ _mongoose.default.connect(connectionString, {
   useNewUrlParser: true
 }, function (err) {
   app.listen(app.get('port'), function () {
-    console.log('Express corriendo en http://localhost:3000');
+    console.log('Express corriendo en http://localhost:' + PORT);
   });
 });
