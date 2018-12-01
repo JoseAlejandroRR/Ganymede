@@ -10,7 +10,7 @@ var mongoSchema = _mongoose.default.Schema; // create schema
 var searchSchema = {
   'request': {},
   'products_data': [],
-  'status': String // create model if not exists.
-
+  'status': String,
+  'created_at': { type: Date, default: Date.now }
 };
 module.exports = _mongoose.default.model('searchs', searchSchema);
