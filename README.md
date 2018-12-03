@@ -4,10 +4,10 @@ exposes the web service API, handles persistence, and delegates search jobs. Per
 
 ## Routes
 
-### Access Tokeb
+### Access Token
 > /api/auth
  
- Endpoint for get the Access Token. Required a object json in body with credentials like:
+ Endpoint for get the Access Token. Required an object json in body with credentials like:
  
  ```sh
  curl -X POST \
@@ -38,7 +38,7 @@ exposes the web service API, handles persistence, and delegates search jobs. Per
   
   > /api/product/search-orders
  
- Endpoint for create a search job according with data send.
+ Endpoint for create a search job according with send data.
  
 | PROVIDER | REQUIRED | OPTIONAL |
 | ------ | ------ | ------ |
@@ -64,7 +64,7 @@ exposes the web service API, handles persistence, and delegates search jobs. Per
   
   ### Get Search Data Object  
   
-  > /api/product/search-orders
+  > /api/product/search-orders/:id
  
  Endpoint for get a search job with data crawler gotten.
  
@@ -78,7 +78,7 @@ exposes the web service API, handles persistence, and delegates search jobs. Per
   
  ### Get Search Objects by Category  
   
-  > /api/product/search-orders
+  > /api/product/search-orders/:category
  
  Endpoint for get a collection with search objects with the same category stored
  
