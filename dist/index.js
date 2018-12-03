@@ -384,25 +384,41 @@ function () {
 
 app.get('/api/product/category/:category_id', function (req, res) {
   var response = null;
-
-  _search.default.find({
+  var page = !isNaN(req.query.page) ? parseInt(req.query.page) : 0;
+  var query = {
     products_data: {
       $elemMatch: {
         category: req.params.category_id
       }
     }
-  }, function (err, data) {
-    if (err) {
-      response = {
-        'error': true,
-        'message': 'Error fetching data by: ' + err
-      };
-      logger.error('ERROR_SEARCH_UPDATE', response.message);
-    } else {
-      response = data;
-    }
+  };
 
-    res.json(response);
+  _search.default.find(query).limit(PER_PAGE).skip(PER_PAGE * page).exec(function (err, data) {
+    _search.default.find(query).countDocuments().exec(function (error, count) {
+      if (err) {
+        response = {
+          'error': true,
+          'message': 'Error fetching data by: ' + err
+        };
+        logger.error('QUERY_DOCUMENTS_ERROR', err);
+      } else if (error) {
+        response = {
+          'error': true,
+          'message': 'Error count document by: ' + error
+        };
+        logger.error('COUNT_DOCUMENTS_ERROR', error);
+      } else {
+        response = {
+          page: page,
+          pagesTotal: Math.ceil(count / PER_PAGE),
+          resultsTotal: count,
+          results: data
+        };
+        logger.info('QUERY_DOCUMENTS_EXCECUTE', response);
+      }
+
+      res.json(response);
+    });
   });
 }); // connection with mongo database server
 
