@@ -382,7 +382,7 @@ function () {
   };
 }()); // route for get documents with a category specific
 
-app.get('/api/product/category/:category_id', function (req, res) {
+app.get('/api/product/category/:category_id', _Middlewares.default.Authentication, function (req, res) {
   var response = null;
   var page = !isNaN(req.query.page) ? parseInt(req.query.page) : 0;
   var query = {

@@ -237,7 +237,7 @@ app.put('/api/product/search-order/:id', middlewares.Authentication, async funct
 
 // route for get documents with a category specific
 
-app.get('/api/product/category/:category_id', (req, res) => {
+app.get('/api/product/category/:category_id', middlewares.Authentication, (req, res) => {
   let response = null
   const page = !isNaN(req.query.page)
     ? parseInt(req.query.page)
