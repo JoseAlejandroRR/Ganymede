@@ -84,7 +84,7 @@ exposes the web service API, handles persistence, and delegates search jobs. Per
  
  ```sh
  curl -X GET \
-  'http://localhost:5000//api/product/category/87asd46as4d684asd6' \
+  'http://localhost:5000//api/product/category/celulares-y-telefonos' \
   -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIqLmNsYXJvdmlkZW8ubmV0IiwiaWF0IjoxNTQzMjQ1NDk4LCJleHAiOjE1NDMyNDcyOTgsInN1YiI6ImFtY28ifQ.5FqImJv4qztTe7QBRu_rDRQgFVhoUfVbfhiQ5Mk-dvY' \
   -H 'Content-Type: application/json' \
   -H 'cache-control: no-cache' \
